@@ -7,10 +7,48 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import Image from 'next/image';
 import { useAppContext } from '@/context/app-context';
+import { useState, useEffect } from 'react';
+import { generateImageAction } from '@/app/actions';
+import { Loader2, Package2 } from 'lucide-react';
 
 export default function AboutPage() {
   const { state } = useAppContext();
   const { teamMembers } = state;
+  const [aboutImage, setAboutImage] = useState("");
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchImage = async () => {
+        setIsLoading(true);
+        const result = await generateImageAction('modern office interior, professional, clean, bright, abstract art');
+        if (result.success && result.data?.imageUrl) {
+            setAboutImage(result.data.imageUrl);
+        } else {
+            // Fallback in case of error
+            setAboutImage("https://placehold.co/800x400.png");
+        }
+        setIsLoading(false);
+    }
+    fetchImage();
+  }, []);
+
+  const getGoogleProfileImage = (email: string) => {
+    return `https://www.google.com/s2/photos/profile/${email}`;
+  }
+
+  if (isLoading) {
+      return (
+          <DashboardLayout>
+            <div className="flex h-full w-full flex-col items-center justify-center bg-background">
+                <div className="relative flex h-20 w-20 items-center justify-center">
+                    <Loader2 className="absolute h-20 w-20 animate-spin text-primary" />
+                    <Package2 className="h-10 w-10 text-primary" />
+                </div>
+                <p className="mt-4 text-lg font-semibold text-primary">Loading Page...</p>
+            </div>
+         </DashboardLayout>
+      );
+  }
 
   return (
     <DashboardLayout>
@@ -25,11 +63,10 @@ export default function AboutPage() {
             </p>
             <div className="relative h-64 w-full overflow-hidden rounded-lg">
               <Image
-                src="https://placehold.co/800x400.png"
+                src={aboutImage}
                 alt="Office"
                 layout="fill"
                 objectFit="cover"
-                data-ai-hint="office team"
               />
             </div>
           </CardContent>
@@ -53,7 +90,7 @@ export default function AboutPage() {
               teamMembers.map((member) => (
                 <div key={member.email} className="flex flex-col items-center gap-4 rounded-lg border p-4 text-center">
                   <Avatar className="h-20 w-20">
-                    <AvatarImage src={`https://placehold.co/128x128.png`} data-ai-hint="professional portrait" />
+                    <AvatarImage src={getGoogleProfileImage(member.email)} />
                     <AvatarFallback>{member.initials}</AvatarFallback>
                   </Avatar>
                   <div className="space-y-1">

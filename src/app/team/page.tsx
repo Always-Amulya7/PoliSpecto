@@ -85,6 +85,10 @@ export default function TeamPage() {
     }
 
     const isAdmin = teamMembers.find(m => m.email === user?.email)?.role === 'Admin';
+    
+    const getGoogleProfileImage = (email: string) => {
+      return `https://www.google.com/s2/photos/profile/${email}`;
+    }
 
   return (
     <DashboardLayout>
@@ -159,7 +163,7 @@ export default function TeamPage() {
                       <TableCell className="font-medium">
                           <div className="flex items-center gap-3">
                               <Avatar>
-                                  <AvatarImage src={`https://placehold.co/40x40.png`} data-ai-hint="professional portrait" />
+                                  <AvatarImage src={getGoogleProfileImage(member.email)} />
                                   <AvatarFallback>{member.initials}</AvatarFallback>
                               </Avatar>
                               <span>{member.name}</span>
