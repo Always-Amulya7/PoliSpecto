@@ -49,7 +49,7 @@ export async function getAnswerAction(values: z.infer<typeof formSchema>) {
       documentChunks: mockDocumentChunks,
     });
 
-    return {success: true, data: result};
+    return {success: true, data: { answer: result.answers.join('\n\n') }};
   } catch (e) {
     console.error(e);
     const errorMessage =

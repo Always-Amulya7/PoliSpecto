@@ -8,6 +8,9 @@ const requestSchema = z.object({
   questions: z.array(z.string().min(1)).min(1),
 });
 
+// It is recommended to store this token in an environment variable.
+const AUTH_TOKEN = "d58390b740b20a227269890ac922ddfc152944cd88d72caf305b18a2f50ef539";
+
 // Mock document chunks as we cannot process PDFs in this environment.
 // These chunks simulate relevant text extracted from a policy document.
 const mockDocumentChunks = [
@@ -27,9 +30,6 @@ const mockDocumentChunks = [
   "Yes, for Plan A, the daily room rent is capped at 1% of the Sum Insured, and ICU charges are capped at 2% of the Sum Insured. These limits do not apply if the treatment is for a listed procedure in a Preferred Provider Network (PPN)."
 ];
 
-// It is recommended to store this token in an environment variable.
-const AUTH_TOKEN = "d58390b740b20a227269890ac922ddfc152944cd88d72caf305b18a2f50ef539";
-
 
 export async function POST(request: Request) {
   try {
@@ -43,7 +43,6 @@ export async function POST(request: Request) {
         return NextResponse.json({ error: 'Unauthorized: Invalid token' }, { status: 401 });
     }
 
-
     const body = await request.json();
     const validatedRequest = requestSchema.safeParse(body);
 
@@ -54,24 +53,19 @@ export async function POST(request: Request) {
     const { questions } = validatedRequest.data;
 
     // In a real application, you would fetch and parse the PDF from validatedRequest.data.documents
-    // For this demo, we use the mock document chunks.
-    const questionString = questions.join('\n');
-
+    // For this demo, we use the mock document chunks for all questions.
+    const documentChunks = mockDocumentChunks;
+    
     const result = await answerQuestions({
-      question: questionString,
-      documentChunks: mockDocumentChunks,
+        question: questions,
+        documentChunks,
     });
     
-    // The answer from the flow is a single string with newlines.
-    // We split it to return an array of strings as per the expected API response format.
-    const answers = result.answer.split('\n\n').filter(ans => ans.trim().length > 0);
+    return NextResponse.json({ answers: result.answers });
 
-    return NextResponse.json({ answers });
   } catch (error) {
     console.error('Error in /api/v1/hackrx/run endpoint:', error);
-    if (error instanceof z.ZodError) {
-        return NextResponse.json({ error: 'Invalid request body', details: error.flatten() }, { status: 400 });
-    }
-    return NextResponse.json({ error: 'An unexpected error occurred.' }, { status: 500 });
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+    return NextResponse.json({ error: 'An unexpected error occurred.', details: errorMessage }, { status: 500 });
   }
 }
