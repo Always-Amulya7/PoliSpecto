@@ -280,9 +280,15 @@ export const AppContextProvider = ({ children }: { children: ReactNode }) => {
           if (!loadedState.teamMembers) loadedState.teamMembers = initialState.teamMembers;
           if (!loadedState.settings) loadedState.settings = initialState.settings;
           if (!loadedState.verificationResults) loadedState.verificationResults = {};
-          if (loadedState.approvals && !loadedState.approvals.every(a => 'answer' in a)) {
-              loadedState.approvals = loadedState.approvals.map(a => ({...a, answer: ''}));
-          }
+        if (
+            loadedState.approvals &&
+            !loadedState.approvals.every((a: Approval) => 'answer' in a)
+        ) {
+            loadedState.approvals = loadedState.approvals.map(
+                (a: Omit<Approval, 'answer'> & Partial<Pick<Approval, 'answer'>>) =>
+                    ({ ...a, answer: '' } as Approval)
+            );
+        }
           dispatch({ type: 'HYDRATE_STATE', payload: loadedState });
       }
     } catch (error) {
