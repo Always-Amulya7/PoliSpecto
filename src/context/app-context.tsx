@@ -115,7 +115,6 @@ const initialState: AppState = {
   suggestions: [],
   teamMembers: [
       { name: 'Amulya Shrivastava', email: 'amulyadeep7@gmail.com', role: 'Admin', avatar: '', initials: 'AS' },
-      { name: 'Anurag Pradhan', email: 'anuragpradhan3640@gmail.com', role: 'Viewer', avatar: '', initials: 'AP' },
   ],
   settings: {
     bio: 'This is a sample bio.',

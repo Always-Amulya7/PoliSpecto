@@ -1,64 +1,194 @@
-'use client';
+// 'use client';
 
-import { useAuth } from '@/hooks/use-auth';
-import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Loader2, Package2 } from 'lucide-react';
-import Link from 'next/link';
-import { useToast } from '@/hooks/use-toast';
+// import { useAuth } from '@/hooks/use-auth';
+// import { useRouter } from 'next/navigation';
+// import { useEffect, useState } from 'react';
+// import { Button } from '@/components/ui/button';
+// import { Input } from '@/components/ui/input';
+// import { Label } from '@/components/ui/label';
+// import { Loader2, Package2 } from 'lucide-react';
+// import Link from 'next/link';
+// import { useToast } from '@/hooks/use-toast';
+
+// export default function RegisterPage() {
+//   const { user, loading, signUpWithEmail } = useAuth();
+//   const router = useRouter();
+//   const { toast } = useToast();
+//   const [isClient, setIsClient] = useState(false);
+
+//   useEffect(() => {
+//     setIsClient(true);
+//   }, []);
+
+//   useEffect(() => {
+//     if (!loading && user) {
+//       router.push('/');
+//     }
+//   }, [user, loading, router]);
+
+//   const handleEmailSignUp = (e: React.FormEvent) => {
+//     e.preventDefault();
+//     const form = e.target as HTMLFormElement;
+//     const email = (form.elements.namedItem('email') as HTMLInputElement).value;
+//     const password = (form.elements.namedItem('password') as HTMLInputElement).value;
+//     const confirmPassword = (form.elements.namedItem('confirmPassword') as HTMLInputElement).value;
+
+//     if (password !== confirmPassword) {
+//         toast({
+//             variant: "destructive",
+//             title: "Passwords do not match",
+//             description: "Please make sure your passwords match.",
+//         });
+//         return;
+//     }
+
+//     if (email && password) {
+//         signUpWithEmail(email, password);
+//     } else {
+//         toast({
+//             variant: "destructive",
+//             title: "Missing Information",
+//             description: "Please provide email and password.",
+//         });
+//     }
+//   };
+
+//   if (!isClient || loading || user) {
+//     return (
+//       <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background">
+//         <div className="relative flex h-20 w-20 items-center justify-center">
+//             <Loader2 className="absolute h-20 w-20 animate-spin text-primary" />
+//             <Package2 className="h-10 w-10 text-primary" />
+//         </div>
+//         <p className="mt-4 text-lg font-semibold text-primary">Loading...</p>
+//       </div>
+//     );
+//   }
+
+//   return (
+//     <div
+//       className="flex min-h-screen items-center justify-center bg-gray-100 font-sans"
+//     >
+//         <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl p-12">
+//             <h2 className="text-3xl font-bold text-gray-800 mb-2">Create an Account</h2>
+//             <p className="text-gray-500 mb-6">Start your journey with us.</p>
+//             <form onSubmit={handleEmailSignUp} className="flex flex-col gap-4">
+//                 <div>
+//                     <Label htmlFor="email" className="text-gray-600 text-xs font-semibold">Email Address</Label>
+//                     <Input id="email" name="email" type="email" placeholder="you@example.com" className="mt-1 bg-gray-100/80 border-gray-200/80 text-gray-800 placeholder:text-gray-400 focus:bg-white focus:border-primary/50 focus:ring-primary/50" />
+//                 </div>
+//                 <div>
+//                     <Label htmlFor="password"  className="text-gray-600 text-xs font-semibold">Password</Label>
+//                     <Input id="password" name="password" type="password" placeholder="••••••••" className="mt-1 bg-gray-100/80 border-gray-200/80 text-gray-800 focus:bg-white focus:border-primary/50 focus:ring-primary/50" />
+//                 </div>
+//                  <div>
+//                     <Label htmlFor="confirmPassword"  className="text-gray-600 text-xs font-semibold">Confirm Password</Label>
+//                     <Input id="confirmPassword" name="confirmPassword" type="password" placeholder="••••••••" className="mt-1 bg-gray-100/80 border-gray-200/80 text-gray-800 focus:bg-white focus:border-primary/50 focus:ring-primary/50" />
+//                 </div>
+//                  <Button type="submit" className="w-full font-semibold text-base bg-primary h-11 mt-4 hover:bg-primary/90">Sign Up</Button>
+//             </form>
+
+//             <div className="mt-6 text-center text-sm text-gray-600">
+//                 Already have an account? <Link href="/login" className="font-semibold text-primary hover:underline">Log in</Link>
+//             </div>
+//         </div>
+//     </div>
+//   );
+// }
+
+"use client";
+
+import { useAuth } from "@/hooks/use-auth";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Loader2, Package2 } from "lucide-react";
+import Link from "next/link";
+import { useToast } from "@/hooks/use-toast";
+import { generateImageAction } from "@/app/actions";
 
 export default function RegisterPage() {
   const { user, loading, signUpWithEmail } = useAuth();
   const router = useRouter();
   const { toast } = useToast();
   const [isClient, setIsClient] = useState(false);
+  const [bgImage, setBgImage] = useState("");
+  const [panelImage, setPanelImage] = useState("");
+  const [imagesLoading, setImagesLoading] = useState(true);
 
   useEffect(() => {
     setIsClient(true);
+    const fetchImages = async () => {
+      try {
+        const [bgResult, panelResult] = await Promise.all([
+          generateImageAction(
+            "ethereal abstract background, professional, cool tones, digital art"
+          ),
+          generateImageAction(
+            "serene sunrise landscape, minimalist, digital art"
+          ),
+        ]);
+
+        if (bgResult.success && bgResult.data?.imageUrl) {
+          setBgImage(bgResult.data.imageUrl);
+        }
+        if (panelResult.success && panelResult.data?.imageUrl) {
+          setPanelImage(panelResult.data.imageUrl);
+        }
+      } catch (error) {
+        console.error("Failed to generate images", error);
+      } finally {
+        setImagesLoading(false);
+      }
+    };
+
+    fetchImages();
   }, []);
 
   useEffect(() => {
     if (!loading && user) {
-      router.push('/');
+      router.push("/");
     }
   }, [user, loading, router]);
 
   const handleEmailSignUp = (e: React.FormEvent) => {
     e.preventDefault();
     const form = e.target as HTMLFormElement;
-    const email = (form.elements.namedItem('email') as HTMLInputElement).value;
-    const password = (form.elements.namedItem('password') as HTMLInputElement).value;
-    const confirmPassword = (form.elements.namedItem('confirmPassword') as HTMLInputElement).value;
+    const email = (form.elements.namedItem("email") as HTMLInputElement).value;
+    const password = (form.elements.namedItem("password") as HTMLInputElement)
+      .value;
+    const confirmPassword = (
+      form.elements.namedItem("confirmPassword") as HTMLInputElement
+    ).value;
 
     if (password !== confirmPassword) {
-        toast({
-            variant: "destructive",
-            title: "Passwords do not match",
-            description: "Please make sure your passwords match.",
-        });
-        return;
+      toast({
+        variant: "destructive",
+        title: "Passwords do not match",
+        description: "Please make sure your passwords match.",
+      });
+      return;
     }
 
     if (email && password) {
-        signUpWithEmail(email, password);
+      signUpWithEmail(email, password);
     } else {
-        toast({
-            variant: "destructive",
-            title: "Missing Information",
-            description: "Please provide email and password.",
-        });
+      toast({
+        variant: "destructive",
+        title: "Missing Information",
+        description: "Please provide email and password.",
+      });
     }
   };
 
-  if (!isClient || loading || user) {
+  if (!isClient || loading || user || imagesLoading) {
     return (
       <div className="flex min-h-screen w-full flex-col items-center justify-center bg-background">
         <div className="relative flex h-20 w-20 items-center justify-center">
-            <Loader2 className="absolute h-20 w-20 animate-spin text-primary" />
-            <Package2 className="h-10 w-10 text-primary" />
+          <Loader2 className="absolute h-20 w-20 animate-spin text-primary" />
+          <Package2 className="h-10 w-10 text-primary" />
         </div>
         <p className="mt-4 text-lg font-semibold text-primary">Loading...</p>
       </div>
@@ -66,32 +196,98 @@ export default function RegisterPage() {
   }
 
   return (
-    <div 
-      className="flex min-h-screen items-center justify-center bg-gray-100 font-sans"
+    <div
+      className="flex min-h-screen items-center justify-center bg-cover bg-center px-4 sm:px-6 lg:px-8"
+      style={{ backgroundImage: `url('${bgImage}')` }}
     >
-        <div className="w-full max-w-md rounded-2xl bg-white shadow-2xl p-12">
-            <h2 className="text-3xl font-bold text-gray-800 mb-2">Create an Account</h2>
-            <p className="text-gray-500 mb-6">Start your journey with us.</p>
-            <form onSubmit={handleEmailSignUp} className="flex flex-col gap-4">
-                <div>
-                    <Label htmlFor="email" className="text-gray-600 text-xs font-semibold">Email Address</Label>
-                    <Input id="email" name="email" type="email" placeholder="you@example.com" className="mt-1 bg-gray-100/80 border-gray-200/80 text-gray-800 placeholder:text-gray-400 focus:bg-white focus:border-primary/50 focus:ring-primary/50" />
-                </div>
-                <div>
-                    <Label htmlFor="password"  className="text-gray-600 text-xs font-semibold">Password</Label>
-                    <Input id="password" name="password" type="password" placeholder="••••••••" className="mt-1 bg-gray-100/80 border-gray-200/80 text-gray-800 focus:bg-white focus:border-primary/50 focus:ring-primary/50" />
-                </div>
-                 <div>
-                    <Label htmlFor="confirmPassword"  className="text-gray-600 text-xs font-semibold">Confirm Password</Label>
-                    <Input id="confirmPassword" name="confirmPassword" type="password" placeholder="••••••••" className="mt-1 bg-gray-100/80 border-gray-200/80 text-gray-800 focus:bg-white focus:border-primary/50 focus:ring-primary/50" />
-                </div>
-                 <Button type="submit" className="w-full font-semibold text-base bg-primary h-11 mt-4 hover:bg-primary/90">Sign Up</Button>
-            </form>
-
-            <div className="mt-6 text-center text-sm text-gray-600">
-                Already have an account? <Link href="/login" className="font-semibold text-primary hover:underline">Log in</Link>
-            </div>
+      <div className="w-full max-w-4xl rounded-2xl bg-white/10 shadow-2xl backdrop-blur-2xl flex flex-col md:flex-row overflow-hidden border border-white/20">
+        {/* Left Panel */}
+        <div
+          className="hidden md:flex md:w-1/2 p-8 lg:p-12 text-white flex-col justify-center items-start bg-cover bg-center transition-all duration-500"
+          style={{ backgroundImage: `url('${panelImage}')` }}
+        >
+          <h1 className="text-3xl lg:text-5xl font-bold [text-shadow:_0_2px_4px_rgb(0_0_0_/_40%)]">
+            Welcome
+          </h1>
+          <p className="mt-2 text-base lg:text-lg [text-shadow:_0_1px_3px_rgb(0_0_0_/_30%)]">
+            Start your journey with us.
+          </p>
         </div>
+
+        {/* Right Panel (Signup Form) */}
+        <div className="w-full md:w-1/2 p-6 sm:p-8 lg:p-12 flex flex-col justify-center bg-white/80 backdrop-blur-sm">
+          <h2 className="text-2xl lg:text-3xl font-bold text-gray-800 mb-2">
+            Sign Up
+          </h2>
+          <p className="text-gray-500 mb-6 text-sm lg:text-base">
+            Create an account to continue.
+          </p>
+
+          <form onSubmit={handleEmailSignUp} className="flex flex-col gap-4">
+            <div>
+              <Label
+                htmlFor="email"
+                className="text-gray-600 text-xs font-semibold"
+              >
+                Email Address
+              </Label>
+              <Input
+                id="email"
+                name="email"
+                type="email"
+                placeholder="you@example.com"
+                className="mt-1 bg-gray-100/80 border-gray-200/80 text-gray-800 placeholder:text-gray-400 focus:bg-white focus:border-primary/50 focus:ring-primary/50"
+              />
+            </div>
+            <div>
+              <Label
+                htmlFor="password"
+                className="text-gray-600 text-xs font-semibold"
+              >
+                Password
+              </Label>
+              <Input
+                id="password"
+                name="password"
+                type="password"
+                placeholder="••••••••"
+                className="mt-1 bg-gray-100/80 border-gray-200/80 text-gray-800 focus:bg-white focus:border-primary/50 focus:ring-primary/50"
+              />
+            </div>
+            <div>
+              <Label
+                htmlFor="confirmPassword"
+                className="text-gray-600 text-xs font-semibold"
+              >
+                Confirm Password
+              </Label>
+              <Input
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                placeholder="••••••••"
+                className="mt-1 bg-gray-100/80 border-gray-200/80 text-gray-800 focus:bg-white focus:border-primary/50 focus:ring-primary/50"
+              />
+            </div>
+            <Button
+              type="submit"
+              className="w-full font-semibold text-base bg-primary h-11 mt-4 hover:bg-primary/90"
+            >
+              Sign Up
+            </Button>
+          </form>
+
+          <div className="mt-6 text-center text-sm text-gray-600">
+            Already have an account?{" "}
+            <Link
+              href="/login"
+              className="font-semibold text-primary hover:underline"
+            >
+              Log in
+            </Link>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
